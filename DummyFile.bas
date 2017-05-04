@@ -10,8 +10,9 @@
 '  Changed: 10.02.2017
 '           - Code reformatting
 '------------------------------------------------------------------------------
-#Compile Exe "DummyFile.exe"
+#Compile Exe ".\DummyFile.exe"
 #Option Version5
+#Break On
 #Dim All
 
 #Debug Error Off
@@ -19,7 +20,7 @@
 
 %VERSION_MAJOR = 2
 %VERSION_MINOR = 0
-%VERSION_REVISION = 1
+%VERSION_REVISION = 2
 
 ' Version Resource information
 #Include ".\DummyFileRes.inc"
@@ -71,7 +72,7 @@ Function PBMain()
 
    ' Application intro
    ConHeadline "DummyFile", %VERSION_MAJOR, %VERSION_MINOR, %VERSION_REVISION
-   ConCopyright "2007-2016", $COMPANY_NAME
+   ConCopyright "2007-2017", $COMPANY_NAME
    Print ""
 
    Trace New ".\DummyFile.tra"
