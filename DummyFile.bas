@@ -5,10 +5,13 @@
 'Prereq.  : -
 'Note     : -
 '
-'   Author: Knuth Konrad 2007
+'   Author: Knuth Konrad 2007, 2017
 '   Source: -
 '  Changed: 10.02.2017
 '           - Code reformatting
+'           15.05.2017
+'           - Application manifest added
+'           - #Break on to prevent context menu mishap.
 '------------------------------------------------------------------------------
 #Compile Exe ".\DummyFile.exe"
 #Option Version5
@@ -20,7 +23,7 @@
 
 %VERSION_MAJOR = 2
 %VERSION_MINOR = 0
-%VERSION_REVISION = 2
+%VERSION_REVISION = 3
 
 ' Version Resource information
 #Include ".\DummyFileRes.inc"

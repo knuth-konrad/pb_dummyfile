@@ -1,4 +1,5 @@
 #Resource Icon, 1, "drive.ico"
+#Resource Manifest, 1, "DummyFile.exe.manifest"
 
 #Resource VersionInfo
 #Resource FileVersion %VERSION_MAJOR, %VERSION_MINOR, %VERSION_REVISION, 0
@@ -11,8 +12,8 @@
 #Resource Version$ "LegalCopyright",   "Copyright 2007-2017 BasicAware"
 #Resource Version$ "OriginalFilename", "DummyFile.exe"
 #Resource Version$ "ProductName",      "DummyFile"
-#Resource Version$ "ProductVersion",   "2.0.2.0"
-#Resource Version$ "FileVersion",      "2.0.2.0"
+#Resource Version$ "ProductVersion",   "2.0.3.0"
+#Resource Version$ "FileVersion",      "2.0.3.0"
 #Resource Version$ "Comments",         "Written by Knuth Konrad"
 
 $COMPANY_NAME = "BasicAware"
