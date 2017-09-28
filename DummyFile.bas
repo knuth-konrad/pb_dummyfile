@@ -23,7 +23,7 @@
 
 %VERSION_MAJOR = 2
 %VERSION_MINOR = 0
-%VERSION_REVISION = 3
+%VERSION_REVISION = 4
 
 ' Version Resource information
 #Include ".\DummyFileRes.inc"
@@ -44,8 +44,8 @@
 Declare Function FormatLoc(ByVal fextValue As Ext, ByVal sMask As String) As String
 Declare Function FileExist(sFile As AsciiZ) As Long
 Declare Sub ShowHelp()
-Declare Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As Long, _
-   Optional ByVal lLineLength As Long) As String
+'Declare Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As Long, _
+'   Optional ByVal lLineLength As Long) As String
 '------------------------------------------------------------------------------
 '*** Variabels ***
 '------------------------------------------------------------------------------
@@ -140,12 +140,10 @@ Function PBMain()
 
    ' *** Start the file creation
    Print ""
-   Print ""
    Print "Preparing file contents ..."
 
-   gsContent = CreateRandomFileContent(gqudSize, lCRLF, lLineLength)
+   Call CreateRandomFileContent(gqudSize, gsContent, lCRLF, lLineLength)
 
-   Print ""
    Print ""
 
    lChunks = lFiles \ %Maximum_Wait_Objects
@@ -272,8 +270,8 @@ Thread Function WriteTempFile(ByVal lFile As Long) As Long
 End Function
 '==============================================================================
 
-Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As Long, _
-   Optional ByVal lLineLength As Long) As String
+Sub CreateRandomFileContent(ByVal qudSize As Quad, ByRef sResult As String, Optional ByVal lCRLF As Long, _
+   Optional ByVal lLineLength As Long)
 '------------------------------------------------------------------------------
 'Purpose  : Generate the contents for the dummy files
 '
@@ -288,24 +286,35 @@ Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As 
 '   Source: -
 '  Changed: -
 '------------------------------------------------------------------------------
-   Local sResult As String
+   ' Local sResult As String
    Local s As Byte Ptr
    Local i, s1 As Quad
    Local dwLineCount As Dword
+   Local curRow, curCol As Long
 
    Trace On
+   Trace Print "-> Allocating space"
 
    ' Preallocate memory
    sResult = Space$(qudSize)
    s = StrPtr(sResult)
+   Trace Print "<- Allocating space"
 
    ' Seed random
    Randomize qudSize
 
+   Trace Print "-> Writing content"
+   Con.Cell To curRow, curCol
    For i = 1 To qudSize
        @s = Rnd(48, 122)
        Incr s
+       If i Mod 1024^2 = 0 Then
+          Con.Locate curRow, 1
+          Con.StdOut "Creating file contents: " & Format$(i, "#,") & " of " & Format$(qudSize, "#,") & " bytes";
+       End If
    Next i
+   Con.StdOut ""
+   Trace Print "<- Writing content"
 
    ' Need a (text) file with actual lines?
    If IsTrue(lCRLF) Then
@@ -339,9 +348,22 @@ Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As 
 
    End If
 
-   CreateRandomFileContent = sResult
+   ' CreateRandomFileContent = sResult
 
+   Trace Print "- End of CreateRandomFileContent, Len(sResult): " & Format$(Len(sResult))
    Trace Off
 
-End Function
+   If Err Then
+      Local lErr As Long
+      lErr = Err
+      Select Case lErr
+      Case 7
+         Con.StdOut "Hold on there - we ran out of memory while trying to create a file that big. Try reducing the file size a bit."
+      Case Else
+         Con.StdOut "An error occured while preparing the dummy file's content. Err " & Format$(Err) & ", " & Error$(Err)
+      End Select
+      ErrClear
+   End If
+
+End Sub
 '==============================================================================
