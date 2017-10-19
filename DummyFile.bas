@@ -303,7 +303,7 @@ Sub ShowHelp()
    Con.StdOut "to simulate 'proper text files'."
    Con.StdOut ""
    Con.StdOut "Usage:"
-   Con.StdOut "DummyFile /n=<No. of files> /s=<file size> [/f=<folder to create files in>] [/lf] [/ll=<No. of characters per line>] [/fe=<file extension<]
+   Con.StdOut "DummyFile /n=<No. of files> /s=<file size> [/f=<folder to create files in>] [/lf] [/ll=<No. of characters per line>] [/fe=<file extension>]"
    Con.StdOut ""
    Con.StdOut "     i.e.: DummyFile /n=10 /s=12MB"
    Con.StdOut "              - Create 10 files (in the current folder) with a size of 12MB each, do not add line feed(s)."
@@ -322,8 +322,8 @@ Sub ShowHelp()
    Con.StdOut "/n  - Number of files to create (mandatory)."
    Con.StdOut "/s  - File size of each file (mandatory)."
    Con.StdOut "/f  - Folder in which the file(s) should be created."
-   Con.StdOut "/lf - Create files with line feeds (CrLf)? 0 = no, 1 = yes."
-   Con.StdOut "/ll - Line length (number of characters). Can only be used in conjunction with /lf=1"
+   Con.StdOut "/lf - Create files with line feeds (CrLf)."
+   Con.StdOut "/ll - Line length (number of characters). Can only be used in conjunction with /lf."
    Con.StdOut "/fe - File extension. Defaults to 'tmp'."
 
    Con.StdOut ""
