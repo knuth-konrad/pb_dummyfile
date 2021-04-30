@@ -1,5 +1,5 @@
 '------------------------------------------------------------------------------
-'Purpose  : Create one Or more Random Data files of a specified size
+'Purpose  : Create one or more Random Data files of a specified size
 '           Might be usefull For testing purposes.
 '
 'Prereq.  : -
@@ -314,7 +314,7 @@ Sub ShowHelp()
    Con.StdOut "           DummyFile /n=10 /s=12MB /f=c:\temp /lf /ll=72"
    Con.StdOut "              - Create 10 files in the folder c:\temp with a size of 12MB each, add line feed(s). Line length should be 72 characters."
    Con.StdOut "           DummyFile /n=10 /s=12MB /f=c:\temp /lf /ll=72 /fe=txt"
-   Con.StdOut "              - Create 10 files with the file extentsion 'txt' in the folder c:\temp with a size of 12MB each, add line feed(s)."
+   Con.StdOut "              - Create 10 files with the file extension 'txt' in the folder c:\temp with a size of 12MB each, add line feed(s)."
    Con.StdOut "                Line length should be 72 characters."
    Con.StdOut ""
    Con.StdOut "Parameters"
@@ -328,10 +328,10 @@ Sub ShowHelp()
 
    Con.StdOut ""
    Con.StdOut "Allowed file size units for parameter /s are:
-   Con.StdOut "<empty> = Byte      i.e. DummyFile /n=1, /s=100"
-   Con.StdOut "     kb = Kilobyte  i.e. DummyFile /n=1, /s=100kb"
-   Con.StdOut "     mb = Megabyte  i.e. DummyFile /n=1, /s=100mb"
-   Con.StdOut "     gb = Gigabyte  i.e. DummyFile /n=1, /s=100gb"
+   Con.StdOut "<empty> = Byte      e.g. DummyFile /n=1, /s=100"
+   Con.StdOut "     kb = Kilobyte  e.g. DummyFile /n=1, /s=100kb"
+   Con.StdOut "     mb = Megabyte  e.g. DummyFile /n=1, /s=100mb"
+   Con.StdOut "     gb = Gigabyte  e.g. DummyFile /n=1, /s=100gb"
    Con.StdOut ""
    Con.StdOut "Please note: 1 KB = 1024 byte, 1 MB = 1024 KB etc."
 
