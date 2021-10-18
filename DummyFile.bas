@@ -1,5 +1,5 @@
 '------------------------------------------------------------------------------
-'Purpose  : Create one Or more Random Data files of a specified size
+'Purpose  : Create one or more Random Data files of a specified size
 '           Might be usefull For testing purposes.
 '
 'Prereq.  : -
@@ -12,6 +12,9 @@
 '           15.05.2017
 '           - Application manifest added
 '           - #Break on to prevent context menu mishap.
+'           18.10.2021
+'           - Rewrite file content creation / file creation in order to
+'           work around Our of Memory errors
 '------------------------------------------------------------------------------
 #Compile Exe ".\DummyFile.exe"
 #Option Version5
@@ -19,12 +22,13 @@
 #Dim All
 
 #Link "baCmdLine.sll"
+' #link "baUtil.PBlib"
 
 #Debug Error Off
 #Tools Off
 
 %VERSION_MAJOR = 3
-%VERSION_MINOR = 0
+%VERSION_MINOR = 1
 %VERSION_REVISION = 0
 
 ' Version Resource information
@@ -34,6 +38,9 @@
 '------------------------------------------------------------------------------
 ' Default line length
 %LINE_LENGTH = 80
+
+' Write block size
+%BLOCK_SIZE = 512 * 1024
 '------------------------------------------------------------------------------
 '*** Enumeration/TYPEs ***
 '------------------------------------------------------------------------------
@@ -46,8 +53,6 @@
 Declare Function FormatLoc(ByVal fextValue As Ext, ByVal sMask As String) As String
 Declare Function FileExist(sFile As AsciiZ) As Long
 Declare Sub ShowHelp()
-'Declare Function CreateRandomFileContent(ByVal qudSize As Quad, Optional ByVal lCRLF As Long, _
-'   Optional ByVal lLineLength As Long) As String
 '------------------------------------------------------------------------------
 '*** Variabels ***
 '------------------------------------------------------------------------------
@@ -78,7 +83,7 @@ Function PBMain()
 
    ' Application intro
    ConHeadline "DummyFile", %VERSION_MAJOR, %VERSION_MINOR, %VERSION_REVISION
-   ConCopyright "2007-2017", $COMPANY_NAME
+   ConCopyright "2007-2021", $COMPANY_NAME
    Print ""
 
    sCmd = Command$
@@ -230,7 +235,9 @@ Function PBMain()
    Print ""
    Print "Preparing file contents ..."
 
-   Call CreateRandomFileContent(gqudSize, gsContent, lCRLF, lLineLength)
+   '
+   ' Call CreateRandomFileContent(gqudSize, gsContent, lCRLF, lLineLength)
+   Call CreateRandomFileContent(%BLOCK_SIZE, gsContent, lCRLF, lLineLength)
 
    Print ""
 
@@ -267,6 +274,8 @@ Function PBMain()
    For i = 1 To lRemain
       Thread Close hThdID(i) To lRet
    Next i
+
+   Flush
 
    Print ""
    Print "Done!"
@@ -305,7 +314,7 @@ Sub ShowHelp()
    Con.StdOut "Usage:"
    Con.StdOut "DummyFile /n=<No. of files> /s=<file size> [/f=<folder to create files in>] [/lf] [/ll=<No. of characters per line>] [/fe=<file extension>]"
    Con.StdOut ""
-   Con.StdOut "     i.e.: DummyFile /n=10 /s=12MB"
+   Con.StdOut "     e.g.: DummyFile /n=10 /s=12MB"
    Con.StdOut "              - Create 10 files (in the current folder) with a size of 12MB each, do not add line feed(s)."
    Con.StdOut "           DummyFile /n=10 /s=12MB /f=c:\temp"
    Con.StdOut "              - Create 10 files in the folder c:\temp with a size of 12MB each, do not add line feed(s)."
@@ -314,7 +323,7 @@ Sub ShowHelp()
    Con.StdOut "           DummyFile /n=10 /s=12MB /f=c:\temp /lf /ll=72"
    Con.StdOut "              - Create 10 files in the folder c:\temp with a size of 12MB each, add line feed(s). Line length should be 72 characters."
    Con.StdOut "           DummyFile /n=10 /s=12MB /f=c:\temp /lf /ll=72 /fe=txt"
-   Con.StdOut "              - Create 10 files with the file extentsion 'txt' in the folder c:\temp with a size of 12MB each, add line feed(s)."
+   Con.StdOut "              - Create 10 files with the file extension 'txt' in the folder c:\temp with a size of 12MB each, add line feed(s)."
    Con.StdOut "                Line length should be 72 characters."
    Con.StdOut ""
    Con.StdOut "Parameters"
@@ -328,10 +337,10 @@ Sub ShowHelp()
 
    Con.StdOut ""
    Con.StdOut "Allowed file size units for parameter /s are:
-   Con.StdOut "<empty> = Byte      i.e. DummyFile /n=1, /s=100"
-   Con.StdOut "     kb = Kilobyte  i.e. DummyFile /n=1, /s=100kb"
-   Con.StdOut "     mb = Megabyte  i.e. DummyFile /n=1, /s=100mb"
-   Con.StdOut "     gb = Gigabyte  i.e. DummyFile /n=1, /s=100gb"
+   Con.StdOut "<empty> = Byte      e.g. DummyFile /n=1, /s=100"
+   Con.StdOut "     kb = Kilobyte  e.g. DummyFile /n=1, /s=100kb"
+   Con.StdOut "     mb = Megabyte  e.g. DummyFile /n=1, /s=100mb"
+   Con.StdOut "     gb = Gigabyte  e.g. DummyFile /n=1, /s=100gb"
    Con.StdOut ""
    Con.StdOut "Please note: 1 KB = 1024 byte, 1 MB = 1024 KB etc."
 
@@ -351,24 +360,44 @@ Thread Function WriteTempFile(ByVal lFile As Long) As Long
 '   Source: -
 '  Changed: -
 '------------------------------------------------------------------------------
-   Local hFile As Long
+   Local i, hFile As Long
    Local sTempfile, sPath As String
-
-   Call EnterCS
+   Local dwWriteCycles, dwRemainder As Dword
 
    sPath = NormalizePath(gsPath)
 
    hFile = FreeFile
    sTempfile = CreateTempFileName(ByCopy sPath, "sa", ByCopy gsFileExt)
 
+   Call EnterCS
    Open sTempfile For Output As #hFile
 
    Print "Thread " & Format$(lFile) & ", creating file of " & FormatLoc(gqudSize, "#,") & " byte(s): " & sTempfile
-
-   Print #hFile, gsContent;
    Call LeaveCS
 
+   ' Write <x> times block until actual size
+
+   dwWriteCycles = gqudSize \ %BLOCK_SIZE
+   dwRemainder =  gqudSize - (dwWriteCycles * %BLOCK_SIZE)
+
+   For i = 1 To dwWriteCycles
+      Call EnterCS
+      Print #hFile, gsContent;
+      Call LeaveCS
+      If i Mod 1024^1 = 0 Then
+         Flush #hFile
+      End If
+   Next i
+
+   If dwRemainder > 0 Then
+      Call EnterCS
+      Print #hFile, Left$(gsContent, dwRemainder);
+      Call LeaveCS
+   End If
+
    Close #hFile
+
+   Print " - Thread " & Format$(lFile) & ", creation file of " & sTempfile & " finished."
 
 End Function
 '==============================================================================
@@ -471,6 +500,7 @@ Sub CreateRandomFileContent(ByVal qudSize As Quad, ByRef sResult As String, Opti
 End Sub
 '==============================================================================
 
+#If 0
 Function FullPathAndUNC(ByVal sPath As String) As String
 '------------------------------------------------------------------------------
 'Purpose  : Resolves/expands a path from a relative path to an absolute path
@@ -564,3 +594,5 @@ dwError = lStatus
 
 End Function
 '------------------------------------------------------------------------------
+
+#EndIf
