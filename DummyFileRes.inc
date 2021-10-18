@@ -9,11 +9,11 @@
 
 #Resource Version$ "CompanyName",      "BasicAware"
 #Resource Version$ "FileDescription",  "Create test/dummy files"
-#Resource Version$ "LegalCopyright",   "Copyright 2007-2017 BasicAware"
+#Resource Version$ "LegalCopyright",   "Copyright 2007-2021 BasicAware"
 #Resource Version$ "OriginalFilename", "DummyFile.exe"
 #Resource Version$ "ProductName",      "DummyFile"
-#Resource Version$ "ProductVersion",   "3.0.0.0"
-#Resource Version$ "FileVersion",      "2.0.0.0"
+#Resource Version$ "ProductVersion",   "3.1.0.0"
+#Resource Version$ "FileVersion",      "3.1.0.0"
 #Resource Version$ "Comments",         "Written by Knuth Konrad"
 
 $COMPANY_NAME = "BasicAware"
