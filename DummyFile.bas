@@ -29,7 +29,7 @@
 
 %VERSION_MAJOR = 3
 %VERSION_MINOR = 1
-%VERSION_REVISION = 0
+%VERSION_REVISION = 1
 
 ' Version Resource information
 #Include ".\DummyFileRes.inc"
@@ -215,7 +215,7 @@ Function PBMain()
 
    ' Echo the CLI parameters
    Con.StdOut "# of files    : " & Format$(lFiles)
-   Con.StdOut "File size     : " & Format$(qudOrgSize) & " " & sUnit
+   Con.StdOut "File size     : " & Format$(qudOrgSize) & " " & UCase$(sUnit)
    Con.StdOut "File extension: " & gsFileExt
    Con.StdOut "Folder        : " & gsPath;
    ' If path is a relative path, display the full path also
@@ -239,6 +239,7 @@ Function PBMain()
    ' Call CreateRandomFileContent(gqudSize, gsContent, lCRLF, lLineLength)
    Call CreateRandomFileContent(%BLOCK_SIZE, gsContent, lCRLF, lLineLength)
 
+   Print "Please be patient, creating files, especially large ones, can take a while."
    Print ""
 
    lChunks = lFiles \ %Maximum_Wait_Objects
@@ -249,13 +250,15 @@ Function PBMain()
 
    Call InitCS()
 
+   Con.Cursor.Off
    For j = 1 To lChunks
 
       For i = 1 To %Maximum_Wait_Objects
          Thread Create WriteTempFile(i) To hThdID(i)
       Next i
 
-      lRet = WaitForMultipleObjects(%Maximum_Wait_Objects, ByVal VarPtr(hThdID(1)), %TRUE, %INFINITE)
+      ' lRet = WaitForMultipleObjects(%Maximum_Wait_Objects, ByVal VarPtr(hThdID(1)), %TRUE, %INFINITE)
+      lRet = WaitForMultipleObjects(lFiles, ByVal VarPtr(hThdID(1)), %TRUE, %INFINITE)
 
       ' Free up the thread handles
       For i = 1 To %Maximum_Wait_Objects
@@ -276,6 +279,7 @@ Function PBMain()
    Next i
 
    Flush
+   Con.Cursor.On
 
    Print ""
    Print "Done!"
@@ -381,23 +385,24 @@ Thread Function WriteTempFile(ByVal lFile As Long) As Long
    dwRemainder =  gqudSize - (dwWriteCycles * %BLOCK_SIZE)
 
    For i = 1 To dwWriteCycles
-      Call EnterCS
       Print #hFile, gsContent;
-      Call LeaveCS
+
       If i Mod 1024^1 = 0 Then
          Flush #hFile
       End If
    Next i
 
    If dwRemainder > 0 Then
-      Call EnterCS
+      ' Call EnterCS
       Print #hFile, Left$(gsContent, dwRemainder);
-      Call LeaveCS
+      ' Call LeaveCS
    End If
 
    Close #hFile
 
+   'print ""
    Print " - Thread " & Format$(lFile) & ", creation file of " & sTempfile & " finished."
+   ' print ""
 
 End Function
 '==============================================================================

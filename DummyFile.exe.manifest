@@ -5,7 +5,7 @@
 	Sample application manifest file:
 -->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"> 
-  <assemblyIdentity version="2.0.4.0"
+  <assemblyIdentity version="3.1.1.0"
      processorArchitecture="X86"
      name="DummyFile"
      type="win32"/> 
